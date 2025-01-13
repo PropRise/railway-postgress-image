@@ -1,8 +1,10 @@
+# Base image with PostgreSQL
 FROM pgduckdb/pgduckdb:15-main
 
+# Switch to root for installation
 USER root
 
-# Install dependencies
+# Install PostGIS and TimescaleDB dependencies
 RUN apt-get update && apt-get install -y \
     postgis \
     postgresql-15-postgis-3 \
@@ -16,12 +18,19 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y timescaledb-2-postgresql-15 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the dynamic configuration script
-COPY modify-config.sh /usr/local/bin/modify-config.sh
-RUN chmod +x /usr/local/bin/modify-config.sh
+# Copy the dynamic config script
+COPY modify-config.sh /docker-entrypoint-initdb.d/modify-config.sh
+RUN chmod +x /docker-entrypoint-initdb.d/modify-config.sh
 
-# Switch back to postgres user
+# Switch to postgres user
 USER postgres
 
-# Run the script during container startup
-CMD ["/usr/local/bin/modify-config.sh"]
+# Override the entrypoint with a wrapper script
+COPY wrapper.sh /usr/local/bin/wrapper.sh
+RUN chmod +x /usr/local/bin/wrapper.sh
+
+# Set the entrypoint to the wrapper script
+ENTRYPOINT ["wrapper.sh"]
+
+# Start PostgreSQL with the default port
+CMD ["postgres"]
