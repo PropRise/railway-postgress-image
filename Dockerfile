@@ -2,6 +2,7 @@ FROM pgduckdb/pgduckdb:15-main
 
 USER root
 
+# Install PostGIS, TimescaleDB, and dependencies
 RUN apt-get update && apt-get install -y \
     postgis \
     postgresql-15-postgis-3 \
@@ -15,7 +16,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y timescaledb-2-postgresql-15 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set shared_preload_libraries environment variable
-ENV POSTGRESQL_SHARED_PRELOAD_LIBRARIES="timescaledb"
+# Copy the dynamic configuration script
+COPY modify-config.sh /docker-entrypoint-initdb.d/modify-config.sh
+RUN chmod +x /docker-entrypoint-initdb.d/modify-config.sh
 
+# Switch back to the postgres user
 USER postgres
