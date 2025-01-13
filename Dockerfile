@@ -1,4 +1,4 @@
-# Base image with PostgreSQL
+# Base image
 FROM pgduckdb/pgduckdb:15-main
 
 # Switch to root for installation
@@ -18,19 +18,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y timescaledb-2-postgresql-15 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the dynamic config script
+# Copy dynamic configuration script into the initialization directory
 COPY modify-config.sh /docker-entrypoint-initdb.d/modify-config.sh
 RUN chmod +x /docker-entrypoint-initdb.d/modify-config.sh
 
-# Switch to postgres user
+# Restore the parent entrypoint and command
 USER postgres
-
-# Override the entrypoint with a wrapper script
-COPY wrapper.sh /usr/local/bin/wrapper.sh
-RUN chmod +x /usr/local/bin/wrapper.sh
-
-# Set the entrypoint to the wrapper script
-ENTRYPOINT ["wrapper.sh"]
-
-# Start PostgreSQL with the default port
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["postgres"]
