@@ -1,9 +1,9 @@
+# Base image
 FROM pgduckdb/pgduckdb:15-main
 
 # Install PostGIS and TimescaleDB system dependencies
 USER root
 
-# Install PostGIS and prepare for TimescaleDB
 RUN apt-get update && apt-get install -y \
     postgis \
     postgresql-15-postgis-3 \
@@ -17,3 +17,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y timescaledb-2-postgresql-15 \
     && rm -rf /var/lib/apt/lists/*
 
+# Enable timescaledb in postgresql.conf
+RUN echo "shared_preload_libraries = 'timescaledb'" >> /etc/postgresql/15/main/postgresql.conf
+
+# Switch back to postgres user
+USER postgres
+
+# Initialize the TimescaleDB extension
+RUN /usr/lib/postgresql/15/bin/postgresql-15-setup initdb
