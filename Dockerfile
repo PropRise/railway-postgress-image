@@ -2,7 +2,7 @@ FROM pgduckdb/pgduckdb:15-main
 
 USER root
 
-# Install PostGIS, TimescaleDB, and dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     postgis \
     postgresql-15-postgis-3 \
@@ -17,8 +17,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the dynamic configuration script
-COPY modify-config.sh /docker-entrypoint-initdb.d/modify-config.sh
-RUN chmod +x /docker-entrypoint-initdb.d/modify-config.sh
+COPY modify-config.sh /usr/local/bin/modify-config.sh
+RUN chmod +x /usr/local/bin/modify-config.sh
 
-# Switch back to the postgres user
+# Switch back to postgres user
 USER postgres
+
+# Run the script during container startup
+CMD ["/usr/local/bin/modify-config.sh"]
