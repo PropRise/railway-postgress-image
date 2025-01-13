@@ -2,7 +2,6 @@ FROM pgduckdb/pgduckdb:15-main
 
 USER root
 
-# Install PostGIS, TimescaleDB, and dependencies
 RUN apt-get update && apt-get install -y \
     postgis \
     postgresql-15-postgis-3 \
@@ -16,8 +15,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y timescaledb-2-postgresql-15 \
     && rm -rf /var/lib/apt/lists/*
 
-# Append the TimescaleDB preload configuration to postgresql.conf
-RUN echo "shared_preload_libraries = 'timescaledb'" >> /var/lib/postgresql/data/pgdata/data/postgresql.conf
+# Set shared_preload_libraries environment variable
+ENV POSTGRESQL_SHARED_PRELOAD_LIBRARIES="timescaledb"
 
-# Switch back to postgres user
 USER postgres
