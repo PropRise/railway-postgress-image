@@ -1,4 +1,4 @@
-FROM pgduckdb/pgduckdb:main-15
+FROM pgduckdb/pgduckdb:15-main
 
 # Install PostGIS system dependencies
 USER root
